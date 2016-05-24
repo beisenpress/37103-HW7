@@ -48,7 +48,7 @@ catalog_DF_valid$Pr <- predict(reg1, newdata = catalog_DF_valid,  type = "respon
 boxplot(Pr ~ buytabw, data = catalog_DF_valid, col = "hotpink1", xlab = "Customer did not buy (0) or bought (1)",
         ylab = "Predicted purchase probability")
 
-# Source the createBins function for creating quartiles
+# Source the createBins function for creating deciles
 source("createBins.R")
 
 ########################################################
@@ -57,7 +57,7 @@ source("createBins.R")
 # Create deciles of predicted probabilities
 catalog_DF_valid$pr_index <- createBins(catalog_DF_valid$Pr, 10)
 
-# Reverse the quartile order, so quartile 1 is the highest probability
+# Reverse the decile order, so decile 1 is the highest probability
 catalog_DF_valid$pr_index <- 11 - catalog_DF_valid$pr_index
 
 # Create a table that contains the number of observations in each bucket
@@ -93,19 +93,18 @@ score_DF$lift <- 100 * score_DF$true_response/mean_response
 
 # Plot Lift
 
-# Create a quartile rank variable
-score_DF$quartile_rank <- 11 - score_DF$pr_index
+# Create a decile rank variable that sorts quartiles from lowest to highest predicted response rate
+score_DF$decile_rank <- rank(-score_DF$pr_index)
 
 # Plot the lift factor for each segment
-plot(score_DF$quartile_rank, score_DF$lift, type = "o", pch = 21, lwd = 0.4, bg = "skyblue1", 
-     xlab = "Quartile of Predicted Response", ylab = "Lift (Calculated using Actual Response)", main = "Lift by Quartile")
+plot(score_DF$decile_rank, score_DF$lift, type = "o", pch = 21, lwd = 0.4, bg = "skyblue1", 
+     xlab = "Decile Rank", ylab = "Lift (Calculated using Actual Response)", main = "Lift by Decile")
 # Draw a horizontal line at 100
 abline(h = 100)
 # Add Gridlines
 grid()
 
 # Plot Cumulative Lift
-
 
 # Sort the data by response rate, descending
 score_DF <- score_DF[order(score_DF$pr_index),]
@@ -139,7 +138,7 @@ plot(score_DF$cum_mailed, score_DF$cum_buy_pct, type = "o", pch = 21, lwd = 0.4,
      xlim = c(0,100), ylim = c(0,100),
      xlab = "Cumulative Percent of Customers Targeted", ylab = "Cumulative Percent of Buyers Captured", main = "Cumulative Gains")
 # Add a 45 degree line
-abline(a = 0, b = 1)
+lines(x = c(0, 100), y = c(0, 100))
 # Add Gridlines
 grid()
 
